@@ -1,7 +1,6 @@
 "use client"
-import { useState } from 'react';
+import { useState, ReactElement } from 'react';
 
-// Визначаємо тип для матриці замість інтерфейсу
 type Matrix = number[][];
 
 class IterativeCode {
@@ -58,19 +57,19 @@ class IterativeCode {
 
 type SelectedCell = [number, number] | null;
 
-export default function IterativeCodeDemo(): JSX.Element {
+export default function IterativeCodeDemo(): ReactElement {
   const [input, setInput] = useState<string>('');
   const [encodedMatrix, setEncodedMatrix] = useState<Matrix | null>(null);
   const [selectedCell, setSelectedCell] = useState<SelectedCell>(null);
 
-  const handleEncode = (): void => {
+  const handleEncode = () => {
     const codec = new IterativeCode(4, 8);
     const binaryData = codec.stringToBinary(input);
     const encoded = codec.encodeMessage(binaryData);
     setEncodedMatrix(encoded);
   };
 
-  const toggleCell = (row: number, col: number): void => {
+  const toggleCell = (row: number, col: number) => {
     if (encodedMatrix && row < encodedMatrix.length && col < encodedMatrix[0].length) {
       const newMatrix = encodedMatrix.map(r => [...r]);
       newMatrix[row][col] = 1 - newMatrix[row][col];
@@ -84,12 +83,12 @@ export default function IterativeCodeDemo(): JSX.Element {
     const isParityBit = i === (encodedMatrix?.length ?? 0) - 1 || j === (encodedMatrix?.[0]?.length ?? 0) - 1;
     const cellValue = encodedMatrix?.[i]?.[j] ?? 0;
 
-    return `
-      border p-2 text-center w-8 h-8 cursor-pointer
-      ${cellValue ? 'bg-blue-200' : 'bg-gray-50'}
-      ${isSelected ? 'ring-2 ring-blue-500' : ''}
-      ${isParityBit ? 'bg-gray-100' : ''}
-    `;
+    return [
+      'border p-2 text-center w-8 h-8 cursor-pointer',
+      cellValue ? 'bg-blue-200' : 'bg-gray-50',
+      isSelected ? 'ring-2 ring-blue-500' : '',
+      isParityBit ? 'bg-gray-100' : ''
+    ].filter(Boolean).join(' ');
   };
 
   return (
