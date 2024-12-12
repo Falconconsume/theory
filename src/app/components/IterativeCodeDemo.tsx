@@ -1,7 +1,8 @@
 "use client"
 import { useState } from 'react';
 
-interface Matrix extends Array<Array<number>> { }
+// Визначаємо тип для матриці замість інтерфейсу
+type Matrix = number[][];
 
 class IterativeCode {
   private rows: number;
