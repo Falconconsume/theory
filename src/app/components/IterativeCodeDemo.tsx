@@ -1,18 +1,23 @@
 "use client"
 import { useState } from 'react';
 
+interface Matrix extends Array<Array<number>> { }
+
 class IterativeCode {
-  constructor(rows, cols) {
+  private rows: number;
+  private cols: number;
+
+  constructor(rows: number, cols: number) {
     this.rows = rows;
     this.cols = cols;
   }
 
-  createMatrix(rows, cols) {
-    return Array(rows).fill().map(() => Array(cols).fill(0));
+  createMatrix(rows: number, cols: number): Matrix {
+    return Array(rows).fill(null).map(() => Array(cols).fill(0));
   }
 
-  encodeMessage(data) {
-    const matrix = this.createMatrix(this.rows + 1, this.cols + 1);
+  encodeMessage(data: number[]): Matrix {
+    const matrix: Matrix = this.createMatrix(this.rows + 1, this.cols + 1);
 
     for (let i = 0; i < this.rows; i++) {
       for (let j = 0; j < this.cols; j++) {
@@ -35,12 +40,12 @@ class IterativeCode {
     return matrix;
   }
 
-  calculateParity(data) {
+  calculateParity(data: number[]): number {
     return data.reduce((sum, bit) => sum + bit, 0) % 2;
   }
 
-  stringToBinary(text) {
-    const binary = [];
+  stringToBinary(text: string): number[] {
+    const binary: number[] = [];
     for (let i = 0; i < text.length; i++) {
       const charCode = text.charCodeAt(i);
       const bits = charCode.toString(2).padStart(8, '0').split('').map(Number);
@@ -50,25 +55,40 @@ class IterativeCode {
   }
 }
 
-export default function IterativeCodeDemo() {
-  const [input, setInput] = useState('');
-  const [encodedMatrix, setEncodedMatrix] = useState(null);
-  const [selectedCell, setSelectedCell] = useState(null);
+type SelectedCell = [number, number] | null;
 
-  const handleEncode = () => {
+export default function IterativeCodeDemo(): JSX.Element {
+  const [input, setInput] = useState<string>('');
+  const [encodedMatrix, setEncodedMatrix] = useState<Matrix | null>(null);
+  const [selectedCell, setSelectedCell] = useState<SelectedCell>(null);
+
+  const handleEncode = (): void => {
     const codec = new IterativeCode(4, 8);
     const binaryData = codec.stringToBinary(input);
     const encoded = codec.encodeMessage(binaryData);
     setEncodedMatrix(encoded);
   };
 
-  const toggleCell = (row, col) => {
+  const toggleCell = (row: number, col: number): void => {
     if (encodedMatrix && row < encodedMatrix.length && col < encodedMatrix[0].length) {
       const newMatrix = encodedMatrix.map(r => [...r]);
       newMatrix[row][col] = 1 - newMatrix[row][col];
       setEncodedMatrix(newMatrix);
       setSelectedCell([row, col]);
     }
+  };
+
+  const getCellClassName = (i: number, j: number): string => {
+    const isSelected = selectedCell && selectedCell[0] === i && selectedCell[1] === j;
+    const isParityBit = i === (encodedMatrix?.length ?? 0) - 1 || j === (encodedMatrix?.[0]?.length ?? 0) - 1;
+    const cellValue = encodedMatrix?.[i]?.[j] ?? 0;
+
+    return `
+      border p-2 text-center w-8 h-8 cursor-pointer
+      ${cellValue ? 'bg-blue-200' : 'bg-gray-50'}
+      ${isSelected ? 'ring-2 ring-blue-500' : ''}
+      ${isParityBit ? 'bg-gray-100' : ''}
+    `;
   };
 
   return (
@@ -109,16 +129,7 @@ export default function IterativeCodeDemo() {
                         <td
                           key={j}
                           onClick={() => toggleCell(i, j)}
-                          className={`
-                                                        border p-2 text-center w-8 h-8 cursor-pointer
-                                                        ${cell ? 'bg-blue-200' : 'bg-gray-50'}
-                                                        ${selectedCell && selectedCell[0] === i && selectedCell[1] === j
-                              ? 'ring-2 ring-blue-500'
-                              : ''}
-                                                        ${i === encodedMatrix.length - 1 || j === row.length - 1
-                              ? 'bg-gray-100'
-                              : ''}
-                                                    `}
+                          className={getCellClassName(i, j)}
                         >
                           {cell}
                         </td>
